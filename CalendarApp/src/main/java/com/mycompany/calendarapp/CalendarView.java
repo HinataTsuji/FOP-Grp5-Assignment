@@ -8,12 +8,12 @@ import java.util.List;
 
 public class CalendarView {
 
-    private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     // DAILY VIEW
     public void displayDailyList(List<MainEvent> events, LocalDate date) {
-        System.out.println("\n------ " + date + " ------");
+        System.out.println("\n--- Daily View of " + date + " ---");
         boolean found = false;
         for (MainEvent event : events) {
             if (event.getStartDateTime().toLocalDate().equals(date)) {
@@ -29,7 +29,7 @@ public class CalendarView {
     public void displayWeeklyList(List<MainEvent> events, LocalDate weekDate) {
         DateTimeFormatter dayNameFormat = DateTimeFormatter.ofPattern("EEE");
         DateTimeFormatter dayNumberFormat = DateTimeFormatter.ofPattern("dd");
-        System.out.println("\n------ Week of " + weekDate + " ------");
+        System.out.println("\n--- Week of " + weekDate + " ---");
 
         LocalDate startOfWeek = weekDate.minusDays(weekDate.getDayOfWeek().getValue() % 7);
 
