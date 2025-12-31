@@ -61,8 +61,6 @@ FOP-Grp5-Assignment/
 │   └── run-gui.bat                # Windows batch launcher
 ├── libs/
 │   └── javafx-sdk-17.0.2/         # JavaFX libraries
-├── FINAL_IMPLEMENTATION_REPORT.md  # Comprehensive feature documentation
-├── NEW_FEATURES_GUIDE.md          # Quick reference guide
 ├── README.md                      # This file
 └── run-gui.ps1                    # PowerShell launcher script
 ```
@@ -121,18 +119,14 @@ eventId,location,category,priority
 
 ## 📝 Assignment Compliance
 
-This project fulfills all requirements for full marks (20/20):
+This project fulfills all requirements :
 
-- ✅ Basic Requirements (5 marks) - Event management, calendar views, search, recurring events
-- ✅ OOP Implementation (4 marks) - Proper class design, inheritance, encapsulation
-- ✅ File Handling (3 marks) - 3 CSV files with proper format
-- ✅ GUI (3 marks) - Professional JavaFX interface
-- ✅ Additional Features (5 marks) - Reminders, clash detection, statistics, extra fields, backup
+- ✅ Basic Requirements - Event management, calendar views, search, recurring events
+- ✅ OOP Implementation - Proper class design, inheritance, encapsulation
+- ✅ File Handling - 3 CSV files with proper format
+- ✅ GUI - Professional JavaFX interface
+- ✅ Additional Features - Reminders, clash detection, statistics, extra fields, backup
 
-## 📚 Documentation
-
-- **FINAL_IMPLEMENTATION_REPORT.md** - Complete feature list and implementation details
-- **NEW_FEATURES_GUIDE.md** - Quick reference for new features
 
 ## 🛠️ Requirements
 
