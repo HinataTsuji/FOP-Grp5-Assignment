@@ -149,7 +149,7 @@ public class AdditionalFieldsHandler {
      */
     private static String[] parseCsvLine(String line) {
         // Create a list to store the parsed values
-        java.util.List<String> result = new java.util.ArrayList<>();
+        List<String> result = new java.util.ArrayList<>();
         StringBuilder current = new StringBuilder();  // Builds the current field value
         boolean inQuotes = false;  // Tracks whether we're inside quoted text
         

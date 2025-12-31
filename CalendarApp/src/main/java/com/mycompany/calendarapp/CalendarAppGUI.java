@@ -340,6 +340,28 @@ public class CalendarAppGUI extends Application {
         TextField occurrencesField = new TextField();
         occurrencesField.setPromptText("Number of occurrences");
 
+        // Recurrence mode: choose either occurrences or end date
+        RadioButton occurrencesRadio = new RadioButton("By occurrences");
+        RadioButton endDateRadio = new RadioButton("By end date");
+        ToggleGroup recurrenceModeGroup = new ToggleGroup();
+        occurrencesRadio.setToggleGroup(recurrenceModeGroup);
+        endDateRadio.setToggleGroup(recurrenceModeGroup);
+        occurrencesRadio.setSelected(true);
+
+        DatePicker recurrenceEndDatePicker = new DatePicker();
+        recurrenceEndDatePicker.setDisable(true);
+
+        // Interval (N) spinner: repeat every N units
+        Spinner<Integer> intervalSpinner = new Spinner<>(1, 1000, 1);
+        intervalSpinner.setEditable(true);
+
+        // Toggle enabling/disabling of inputs based on mode
+        recurrenceModeGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
+            boolean byOccurrences = (newToggle == occurrencesRadio);
+            occurrencesField.setDisable(!byOccurrences);
+            recurrenceEndDatePicker.setDisable(byOccurrences);
+        });
+
         // Additional fields
         TextField locationField = new TextField();
         locationField.setPromptText("Location (optional)");
@@ -364,14 +386,21 @@ public class CalendarAppGUI extends Application {
         grid.add(endTimePicker, 1, 5);
         grid.add(new Label("Recurrence Type:"), 0, 6);
         grid.add(recurrenceBox, 1, 6);
-        grid.add(new Label("Occurrences:"), 0, 7);
-        grid.add(occurrencesField, 1, 7);
-        grid.add(new Label("Location:"), 0, 8);
-        grid.add(locationField, 1, 8);
-        grid.add(new Label("Category:"), 0, 9);
-        grid.add(categoryBox, 1, 9);
-        grid.add(new Label("Priority:"), 0, 10);
-        grid.add(priorityBox, 1, 10);
+        grid.add(new Label("Recurrence Mode:"), 0, 7);
+        HBox modeBox = new HBox(10, occurrencesRadio, endDateRadio);
+        grid.add(modeBox, 1, 7);
+        grid.add(new Label("Interval (N):"), 0, 8);
+        grid.add(intervalSpinner, 1, 8);
+        grid.add(new Label("Occurrences:"), 0, 9);
+        grid.add(occurrencesField, 1, 9);
+        grid.add(new Label("Recurrence End Date:"), 0, 10);
+        grid.add(recurrenceEndDatePicker, 1, 10);
+        grid.add(new Label("Location:"), 0, 11);
+        grid.add(locationField, 1, 11);
+        grid.add(new Label("Category:"), 0, 12);
+        grid.add(categoryBox, 1, 12);
+        grid.add(new Label("Priority:"), 0, 13);
+        grid.add(priorityBox, 1, 13);
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -391,9 +420,30 @@ public class CalendarAppGUI extends Application {
                     LocalDateTime start = LocalDateTime.of(startDate, startTime);
                     LocalDateTime end = LocalDateTime.of(endDate, endTime);
                     String recurrence = recurrenceBox.getValue();
-                    int occurrences = Integer.parseInt(occurrencesField.getText());
+                    if (recurrence == null || recurrence.isEmpty()) {
+                        throw new IllegalArgumentException("Please choose a recurrence type.");
+                    }
 
-                    RecurringEvent event = new RecurringEvent(manager.generateEventId(), title, description, start, end, recurrence, occurrences);
+                    RecurringEvent event;
+                    Toggle selectedMode = recurrenceModeGroup.getSelectedToggle();
+                    if (selectedMode == null) {
+                        throw new IllegalArgumentException("Please choose recurrence by occurrences or by end date.");
+                    }
+
+                    int interval = intervalSpinner.getValue();
+                    if (interval <= 0) throw new IllegalArgumentException("Interval must be > 0.");
+
+                    if (selectedMode == occurrencesRadio) {
+                        // Use occurrences
+                        int occurrences = Integer.parseInt(occurrencesField.getText());
+                        if (occurrences <= 0) throw new IllegalArgumentException("Occurrences must be > 0.");
+                        event = new RecurringEvent(manager.generateEventId(), title, description, start, end, recurrence, interval, occurrences);
+                    } else {
+                        // Use end date
+                        LocalDate recEnd = recurrenceEndDatePicker.getValue();
+                        if (recEnd == null) throw new IllegalArgumentException("Please choose a recurrence end date.");
+                        event = new RecurringEvent(manager.generateEventId(), title, description, start, end, recurrence, interval, recEnd);
+                    }
                     
                     // Set additional fields
                     event.setLocation(locationField.getText());

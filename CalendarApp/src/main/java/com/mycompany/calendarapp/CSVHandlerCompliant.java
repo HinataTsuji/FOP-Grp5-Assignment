@@ -101,10 +101,17 @@ public class CSVHandlerCompliant {
                 if (e instanceof RecurringEvent) {  // Only process recurring events
                     RecurringEvent re = (RecurringEvent) e;  // Cast to RecurringEvent
                     
-                    // Convert recurrence type (DAILY/WEEKLY/MONTHLY) to interval format (1d/1w/1m)
-                    String interval = convertRecurrenceTypeToInterval(re.getRecurrenceType());
+                    // Build recurrence interval string (e.g., "1d", "2w", "3m")
+                    int intervalNum = re.getInterval();
+                    String unitChar = recurrenceTypeToUnitChar(re.getRecurrenceType());
+                    String interval = intervalNum + unitChar;
                     int times = re.getOccurrences();  // How many times it repeats
-                    String endDate = "0";  // Using times instead of end date (so this is "0")
+                    String endDate = "0";  // Default to "0" when not using end date
+                    
+                    // If occurrences not set, but an end date is provided, write the end date instead
+                    if (times <= 0 && re.getRecurrenceEndDate() != null) {
+                        endDate = re.getRecurrenceEndDate().toString(); // ISO_LOCAL_DATE format
+                    }
                     
                     // Write CSV line
                     pw.println(e.getEventId() + "," + interval + "," + times + "," + endDate);
@@ -145,19 +152,58 @@ public class CSVHandlerCompliant {
             if (recurrentData.containsKey(eventId)) {
                 // This is a recurring event
                 RecurrentEventData rd = recurrentData.get(eventId);
-                String recurrenceType = convertIntervalToRecurrenceType(rd.getRecurrentInterval());
+                String rawInterval = rd.getRecurrentInterval(); // e.g., "2w" or "1d"
+                int interval = 1;
+                // Parse the numeric part of the interval
+                if (rawInterval != null && rawInterval.length() > 1) {
+                    try {
+                        interval = Integer.parseInt(rawInterval.substring(0, rawInterval.length() - 1));
+                    } catch (NumberFormatException ex) {
+                        interval = 1;
+                    }
+                }
+                String recurrenceType = convertIntervalToRecurrenceType(rawInterval);
                 int occurrences = rd.getRecurrentTimes();
+                String endDate = rd.getRecurrentEndDate();
                 
-                // Create RecurringEvent from basic event data
-                RecurringEvent recurringEvent = new RecurringEvent(
-                    eventId,
-                    event.getTitle(),
-                    event.getDescription(),
-                    event.getStartDateTime(),
-                    event.getEndDateTime(),
-                    recurrenceType,
-                    occurrences
-                );
+                RecurringEvent recurringEvent;
+                if (occurrences > 0) {
+                    // Create RecurringEvent using occurrences and interval
+                    recurringEvent = new RecurringEvent(
+                        eventId,
+                        event.getTitle(),
+                        event.getDescription(),
+                        event.getStartDateTime(),
+                        event.getEndDateTime(),
+                        recurrenceType,
+                        interval,
+                        occurrences
+                    );
+                } else if (endDate != null && !endDate.equals("0") && !endDate.isEmpty()) {
+                    // Create RecurringEvent using an end date (parse from ISO date)
+                    LocalDate rdEnd = LocalDate.parse(endDate);
+                    recurringEvent = new RecurringEvent(
+                        eventId,
+                        event.getTitle(),
+                        event.getDescription(),
+                        event.getStartDateTime(),
+                        event.getEndDateTime(),
+                        recurrenceType,
+                        interval,
+                        rdEnd
+                    );
+                } else {
+                    // Fallback: no occurrences or end date specified — treat as single occurrence
+                    recurringEvent = new RecurringEvent(
+                        eventId,
+                        event.getTitle(),
+                        event.getDescription(),
+                        event.getStartDateTime(),
+                        event.getEndDateTime(),
+                        recurrenceType,
+                        0
+                    );
+                }
                 
                 // Copy reminder if exists
                 if (event.getReminder() != null) {
@@ -239,14 +285,15 @@ public class CSVHandlerCompliant {
     }
 
     /**
-     * Convert RecurrenceType (DAILY, WEEKLY, MONTHLY) to interval format (1d, 1w, 1m)
+     * Helper to convert recurrence type to unit character used in interval strings
      */
-    private static String convertRecurrenceTypeToInterval(String recurrenceType) {
+    private static String recurrenceTypeToUnitChar(String recurrenceType) {
+        if (recurrenceType == null) return "d";
         switch (recurrenceType.toUpperCase()) {
-            case "DAILY": return "1d";
-            case "WEEKLY": return "1w";
-            case "MONTHLY": return "1m";
-            default: return "1d";
+            case "DAILY": return "d";
+            case "WEEKLY": return "w";
+            case "MONTHLY": return "m";
+            default: return "d";
         }
     }
 
