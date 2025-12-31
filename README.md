@@ -61,8 +61,6 @@ FOP-Grp5-Assignment/
 │   └── run-gui.bat                # Windows batch launcher
 ├── libs/
 │   └── javafx-sdk-17.0.2/         # JavaFX libraries
-├── FINAL_IMPLEMENTATION_REPORT.md  # Comprehensive feature documentation
-├── NEW_FEATURES_GUIDE.md          # Quick reference guide
 ├── README.md                      # This file
 └── run-gui.ps1                    # PowerShell launcher script
 ```
