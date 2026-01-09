@@ -12,7 +12,7 @@ public class MainMenu {
 
         Scanner input = new Scanner(System.in);
         EventManager manager = new EventManager();
-        CSVHandler.loadEvents(manager);
+        CSVHandlerCompliant.loadEvents(manager);
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         CalendarView calendarView = new CalendarView();
@@ -50,7 +50,7 @@ public class MainMenu {
                     break;
 
                 case 5:
-                    CSVHandler.saveEvents(manager);
+                    CSVHandlerCompliant.saveEvents(manager);
                     System.out.println("Saved! Goodbye!");
                     System.exit(0);
                     break;
@@ -104,7 +104,8 @@ public class MainMenu {
                     System.out.print("Number of occurrences: ");
                     int rOccurrences = input.nextInt();
                     input.nextLine();
-                    RecurringEvent recurringEvent = new RecurringEvent(manager.generateEventId(), rTitle, rDescription, rStart, rEnd, rType, rOccurrences);
+                    // Default interval = 1 (every unit once)
+                    RecurringEvent recurringEvent = new RecurringEvent(manager.generateEventId(), rTitle, rDescription, rStart, rEnd, rType, 1, rOccurrences);
                     manager.addEvent(recurringEvent);
                     System.out.println("Recurring event added!");
                     break;

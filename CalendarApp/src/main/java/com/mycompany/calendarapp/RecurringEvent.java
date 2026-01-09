@@ -1,6 +1,7 @@
 package com.mycompany.calendarapp;
 
 import java.time.LocalDateTime;  // For date and time
+import java.time.LocalDate;  // For end-date handling
 import java.time.temporal.ChronoUnit;  // For adding days/weeks/months
 import java.util.ArrayList;  // For storing lists
 import java.util.List;  // List interface
@@ -30,6 +31,8 @@ public class RecurringEvent extends MainEvent {
     // Recurrence-specific fields
     private String recurrenceType;  // Type of recurrence: "DAILY", "WEEKLY", or "MONTHLY"
     private int occurrences;  // How many times the event repeats
+    private LocalDate recurrenceEndDate; // Optional end date for recurrence (null if using occurrences)
+    private int interval = 1; // Interval between occurrences (1 = every unit, 2 = every 2 units, etc.)
 
     /**
      * Constructor - Creates a new recurring event
@@ -49,17 +52,64 @@ public class RecurringEvent extends MainEvent {
         super(eventId, title, description, startDateTime, endDateTime);
         this.recurrenceType = recurrenceType.toUpperCase();  // Store in uppercase for consistency
         this.occurrences = occurrences;
+        this.recurrenceEndDate = null; // Not using end date in this constructor
+        this.interval = 1; // default interval
     }
+
+    /**
+     * Constructor that accepts an end date instead of a fixed occurrence count
+     */
+    public RecurringEvent(int eventId, String title, String description,
+                          LocalDateTime startDateTime, LocalDateTime endDateTime,
+                          String recurrenceType, LocalDate recurrenceEndDate) {
+        super(eventId, title, description, startDateTime, endDateTime);
+        this.recurrenceType = recurrenceType.toUpperCase();
+        this.occurrences = 0; // Use end date instead
+        this.recurrenceEndDate = recurrenceEndDate;
+        this.interval = 1; // default interval
+    }
+
+    /**
+     * Constructor that accepts an interval and occurrences
+     */
+    public RecurringEvent(int eventId, String title, String description,
+                          LocalDateTime startDateTime, LocalDateTime endDateTime,
+                          String recurrenceType, int interval, int occurrences) {
+        super(eventId, title, description, startDateTime, endDateTime);
+        this.recurrenceType = recurrenceType.toUpperCase();
+        this.interval = Math.max(1, interval);
+        this.occurrences = occurrences;
+        this.recurrenceEndDate = null;
+    }
+
+    /**
+     * Constructor that accepts an interval and an end date
+     */
+    public RecurringEvent(int eventId, String title, String description,
+                          LocalDateTime startDateTime, LocalDateTime endDateTime,
+                          String recurrenceType, int interval, LocalDate recurrenceEndDate) {
+        super(eventId, title, description, startDateTime, endDateTime);
+        this.recurrenceType = recurrenceType.toUpperCase();
+        this.interval = Math.max(1, interval);
+        this.occurrences = 0;
+        this.recurrenceEndDate = recurrenceEndDate;
+    }
+
+
 
     // Getter methods
     public String getRecurrenceType() { return recurrenceType; }
     public int getOccurrences() { return occurrences; }
+    public LocalDate getRecurrenceEndDate() { return recurrenceEndDate; }
+    public int getInterval() { return interval; }
 
     // Setter methods
     public void setRecurrenceType(String recurrenceType) { 
         this.recurrenceType = recurrenceType.toUpperCase();  // Always store uppercase
     }
     public void setOccurrences(int occurrences) { this.occurrences = occurrences; }
+    public void setRecurrenceEndDate(LocalDate recurrenceEndDate) { this.recurrenceEndDate = recurrenceEndDate; }
+    public void setInterval(int interval) { this.interval = interval; }
 
     /**
      * Calculate the next occurrence after a given date/time
@@ -75,11 +125,11 @@ public class RecurringEvent extends MainEvent {
     public LocalDateTime getNextOccurrence(LocalDateTime current) {
         switch (recurrenceType) {
             case "DAILY": 
-                return current.plus(1, ChronoUnit.DAYS);  // Add 1 day
+                return current.plus(interval, ChronoUnit.DAYS);  // Add interval days
             case "WEEKLY": 
-                return current.plus(1, ChronoUnit.WEEKS);  // Add 1 week
+                return current.plus(interval, ChronoUnit.WEEKS);  // Add interval weeks
             case "MONTHLY": 
-                return current.plus(1, ChronoUnit.MONTHS);  // Add 1 month
+                return current.plus(interval, ChronoUnit.MONTHS);  // Add interval months
             default: 
                 return current;  // If type is unknown, return same time
         }
@@ -106,23 +156,40 @@ public class RecurringEvent extends MainEvent {
         // Calculate how long the event lasts (in minutes)
         long duration = ChronoUnit.MINUTES.between(currentStart, currentEnd);
         
-        // Generate each occurrence
-        for (int i = 0; i < occurrences; i++) {
-            // Create a new event for this occurrence
-            MainEvent occurrence = new MainEvent(
-                this.getEventId(),  // Same ID as parent recurring event
-                this.getTitle() + " (Occurrence " + (i + 1) + ")",  // Add occurrence number to title
-                this.getDescription(),  // Same description
-                currentStart,  // Start time for this occurrence
-                currentEnd  // End time for this occurrence
-            );
-            occurrencesList.add(occurrence);  // Add to the list
-            
-            // Calculate the next occurrence's times
-            currentStart = getNextOccurrence(currentStart);
-            currentEnd = currentStart.plus(duration, ChronoUnit.MINUTES);  // Maintain same duration
+        // If occurrences is set (>0), generate that many occurrences
+        if (occurrences > 0) {
+            for (int i = 0; i < occurrences; i++) {
+                MainEvent occurrence = new MainEvent(
+                    this.getEventId(),
+                    this.getTitle() + " (Occurrence " + (i + 1) + ")",
+                    this.getDescription(),
+                    currentStart,
+                    currentEnd
+                );
+                occurrencesList.add(occurrence);
+                currentStart = getNextOccurrence(currentStart);
+                currentEnd = currentStart.plus(duration, ChronoUnit.MINUTES);
+            }
+        } else if (recurrenceEndDate != null) {
+            // Generate occurrences until the start date exceeds the recurrence end date (inclusive)
+            int i = 0;
+            while (!currentStart.toLocalDate().isAfter(recurrenceEndDate)) {
+                MainEvent occurrence = new MainEvent(
+                    this.getEventId(),
+                    this.getTitle() + " (Occurrence " + (i + 1) + ")",
+                    this.getDescription(),
+                    currentStart,
+                    currentEnd
+                );
+                occurrencesList.add(occurrence);
+                currentStart = getNextOccurrence(currentStart);
+                currentEnd = currentStart.plus(duration, ChronoUnit.MINUTES);
+                i++;
+                // Safety: avoid infinite loops by breaking after a very large number
+                if (i > 10000) break;
+            }
         }
-        
+
         return occurrencesList;  // Return the complete list
     }
 
@@ -139,6 +206,7 @@ public class RecurringEvent extends MainEvent {
                 ", RecurringEvent{" +
                 "recurrenceType='" + recurrenceType + '\'' +
                 ", occurrences=" + occurrences +
+                ", recurrenceEndDate=" + recurrenceEndDate +
                 '}';
     }
 }
