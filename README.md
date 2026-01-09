@@ -1,4 +1,4 @@
-# 📅 Calendar and Schedular Application
+# 📅 Calendar and Scheduler Application
 
 ## 📌 Project Overview
 
