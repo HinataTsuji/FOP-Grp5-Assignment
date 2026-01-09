@@ -15,6 +15,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * JavaFX front-end for the calendar app. Handles scene setup, dialogs for add/update/search,
+ * clash confirmations, notification banner wiring, and persistence round-trips via CSV handlers.
+ * The UI is split into a sidebar menu, top nav actions, dashboard tiles, calendar view, and tables.
+ */
 public class CalendarAppGUI extends Application {
     private EventManager manager;
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");

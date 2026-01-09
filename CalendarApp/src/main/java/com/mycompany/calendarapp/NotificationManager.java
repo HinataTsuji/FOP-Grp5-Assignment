@@ -16,6 +16,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Builds and manages in-app reminder banners. Filters events to those with explicit reminders,
+ * checks timing windows, and renders styled JavaFX notification rows with dismiss handling.
+ */
 public class NotificationManager {
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");

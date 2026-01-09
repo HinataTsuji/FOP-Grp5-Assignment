@@ -6,6 +6,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Console-based entry point used for manual testing and quick data entry.
+ * Mirrors core features of the GUI: load events from CSV, navigate simple menus,
+ * and save updates back to disk before exit.
+ */
 public class MainMenu {
 
     public static void main(String[] args) {
