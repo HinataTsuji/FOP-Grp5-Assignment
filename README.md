@@ -5,6 +5,7 @@
 This project is a Calendar and Scheduler Application developed in Java for personal time management.
 The application allows users to create, manage, search, and view events while ensuring data persistence using CSV files (no database usage).
 
+
 ## 🎯 Features
 
 ### Core Features
@@ -161,7 +162,7 @@ This project fulfills all requirements :
 - ✅ GUI - Professional JavaFX interface
 - ✅ Additional Features - Reminders, clash detection, statistics, extra fields, backup
 
-## 👥 Group 5
+## 👥 Group DeCoderz (Group 5) 
 
 **Course:** WIX1002 – Fundamentals of Programming  
 **Year:** 2025/2026
@@ -169,9 +170,9 @@ This project fulfills all requirements :
 **Group Members:**
 - Chu Xuan Pei
 - Chua Pei Ying
+- Kong LingChen
 - Lim Hui Yun
 - Lim Xuan Ning
-- Kong LingChen
 
 ## 📄 License
 
